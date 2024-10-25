@@ -1,0 +1,11 @@
+#Parameters for compensation and tracking
+delta_x=3.75
+delta_y=3.75
+wavelength=0.633
+quadrant=2
+mask_radius=200
+threshold=10
+min_range=100
+max_range=200
+steps=10
+output_file=Globulos/video_z1
