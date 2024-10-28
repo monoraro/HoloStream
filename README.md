@@ -6,7 +6,7 @@ Holostream is a software application designed for processing holograms, offering
 
 This project contains the following folders:
 
-- **Serial_version/executable_files/**: This folder contains the complete serial Holostream in `.exe` files. To install it on Windows, download this folder.
+- **Serial_version/executable_files/**: This folder contains the complete serial Holostream in `.exe` files compressed on a .7z type file. To install it on Windows, download the .7z and decompress it.
 - **Serial_version/Python_codes/**: This folder contains the Python codes used to create the serial version. If you want to install it this way, please read the requirements.
 - **Parallel_version/executable_files/**: This folder contains the complete Holostream parallelized in `.exe` files. To install it on Windows, download this folder.
 - **Parallel_version/Python_codes/**: This folder contains the Python codes used to create the parallel version. If you want to install it this way, please read the requirements.
@@ -15,21 +15,5 @@ This project contains the following folders:
 
 ## Requirements
 
-List any requirements needed to run the project, if applicable. For example:
-
-- Python 3.x
-- Required libraries (list libraries)
 
 ## Installation
-
-Instructions on how to install the project and its dependencies.
-
-```bash
-# Clone the repository
-git clone https://github.com/your_username/your_repository.git
-
-# Navigate to the project directory
-cd your_repository
-
-# Install dependencies (if necessary)
-pip install -r requirements.txt
