@@ -1,0 +1,9 @@
+#Parameters for compensation and tracking
+delta_x=3.75
+delta_y=3.75
+wavelength=0.633
+quadrant=2
+min_range=-2
+max_range=2
+steps=10
+output_file=
