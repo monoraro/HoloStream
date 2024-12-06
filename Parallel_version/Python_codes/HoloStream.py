@@ -61,6 +61,11 @@ class CameraApp:
         #Llamamos opencv para leer la cámara y leemos el tamaño de la imagen 
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
+        # Verificar si la cámara fue detectada correctamente
+        if not ret:
+            messagebox.showerror("Error", "No camera were deteced. The app will close, to compensate a pre-recorded hologram open holoStream_compensation_interface.exe or to track a object open holoStream_tracking_interface.exe")
+            ventana.destroy()  # Cierra la aplicación
+            return
         ancho = cv2.CAP_PROP_FRAME_WIDTH
         largo = cv2.CAP_PROP_FRAME_HEIGHT
 
@@ -127,19 +132,23 @@ class CameraApp:
         # Insertar el valor inicial de longitud de onda
         self.entry_param3.insert(0, "0.633")
 
-        self.mask_len = tk.Entry(ventana,width = 11)
-        self.mask_len.grid(row=8, column=3, padx=(0, 0), pady=10, sticky="e")
+        #self.mask_len = tk.Entry(ventana,width = 11)
+        #self.mask_len.grid(row=8, column=3, padx=(0, 0), pady=10, sticky="e")
 
         # Colocar el placeholder 
-        self.mask_len.insert(0, "Mask radius")
+        #self.mask_len.insert(0, "Mask radius")
 
         # Vincular los eventos para quitar y agregar el placeholder
-        self.mask_len.bind("<FocusIn>", self.clear_placeholder)
-        self.mask_len.bind("<FocusOut>", self.add_placeholder)
+        #self.mask_len.bind("<FocusIn>", self.clear_placeholder)
+        #self.mask_len.bind("<FocusOut>", self.add_placeholder)
         # Boton de aplicar la configuración
         self.boton_aplicar = ttk.Button(ventana, text="Apply", command=self.aplicar_transformaciones)
-        self.boton_aplicar.grid(row=9, column= 3, padx=10, pady=10, sticky='e')
-
+        self.boton_aplicar.grid(row=8, column= 3, padx=10, pady=10, sticky='e')
+        
+        self.boton_stop = ttk.Button(ventana, text="Stop", command=self.stop_recording)
+        self.boton_stop.grid(row=9, column= 3, padx=10, pady=10, sticky='e')
+        self.boton_stop.config(state="disabled")  # Deshabilita el botón si no hay texto
+        
         #Sección de grabar
         ttk.Label(ventana, text="Record", font=("Helvetica", 16, "bold")).grid(row=7, column=5, padx=(0, 0), pady=10,columnspan=2)
         
@@ -155,7 +164,7 @@ class CameraApp:
 
         #Ajusto las imagenes al tamaño de la pantalla meramente para visualización
         self.ancho = round(screen_width/3.05)
-        self.largo = round(screen_height/2)
+        self.largo = round(screen_height/3)
         # Imágenes iniciales de fondo negro 
         self.black_image1 = Image.new("RGB", (self.ancho, self.largo), "black")
         self.black_image2 = Image.new("RGB", (self.ancho, self.largo), "black")
@@ -211,7 +220,10 @@ class CameraApp:
     def clear_placeholder(self,event):
         if self.mask_len.get() == "Mask radius":
             self.mask_len.delete(0, tk.END)
-
+    def stop_recording(self):
+        self.ini = 0
+        self.boton_stop.config(state="disabled")  # Deshabilita el botón si no hay texto
+    
     # Función que vuelve a colocar el placeholder si el campo está vacío
     def add_placeholder(self,event):
         if self.mask_len.get() == "":
@@ -396,19 +408,21 @@ class CameraApp:
         
         grid_dim = (N // (block_dim[0]), M // (block_dim[1]), 1)
         self.Amplitud(self.U_gpu,self.holo,np.int32(N),np.int32(M),block=block_dim, grid=grid_dim)
-        mai = self.U_gpu.get()
-        finale = mai.reshape((N, M))
+        
+        #Mascara circular
+        #mai = self.U_gpu.get()
+        #finale = mai.reshape((N, M))
         
 
-        #Creacion de la mascara circular
-        pos_max = np.unravel_index(np.argmax(finale, axis=None), U.shape)
-        mascara = crear_mascara_circular(U.shape,(pos_max[1],pos_max[0]),self.mask_len_data)
-        mascara = asarray(mascara.astype(np.float32))
-        self.cuadrante_gpu = gpuarray.to_gpu(mascara)
+        ##Creacion de la mascara circular
+        #pos_max = np.unravel_index(np.argmax(finale, axis=None), U.shape)
+        #mascara = crear_mascara_circular(U.shape,(pos_max[1],pos_max[0]),self.mask_len_data)
+        #mascara = asarray(mascara.astype(np.float32))
+        #self.cuadrante_gpu = gpuarray.to_gpu(mascara)
 
         #Aplicacion de la mascara circular
-        grid_dim = (N // (block_dim[0]), M // (block_dim[1]), 1)
-        self.mascara_1er_cuadrante(self.holo,self.holo2,self.cuadrante_gpu, np.int32(N),np.int32(M), block=block_dim, grid=grid_dim)
+        #grid_dim = (N // (block_dim[0]), M // (block_dim[1]), 1)
+        #self.mascara_1er_cuadrante(self.holo,self.holo2,self.cuadrante_gpu, np.int32(N),np.int32(M), block=block_dim, grid=grid_dim)
 
         grid_dim = (N // (block_dim[0]*2), M // (block_dim[1]*2), 1)
         #ifft
@@ -709,12 +723,13 @@ class CameraApp:
     
     #Esta función permite reconocer los parámetros para la reconstrucción
     def aplicar_transformaciones(self):
+        self.boton_stop.config(state="normal")
         # Obtener los parámetros ingresados por el usuario
         self.dx = float(self.entry_param1.get())
         self.dy = float(self.entry_param2.get())
         self.lamb = float(self.entry_param3.get())
         self.cuadrante = float(self.entry_param4.get())
-        self.mask_len_data = int(self.mask_len.get())
+        #self.mask_len_data = int(self.mask_len.get())
         self.ini=1
 
 #Función para hacer zoom al fft
@@ -754,6 +769,7 @@ class CameraApp:
 
     #Seccion para el tracking
     def run_other_program(self):
+        python_path = sys.executable  
         # Ejecutar el segundo script
         try:
             # Ruta al segundo ejecutable
@@ -761,25 +777,42 @@ class CameraApp:
             
             # Ejecutar el segundo ejecutable
             subprocess.run([tracking_serial_exe], check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error al ejecutar {tracking_serial_exe}: {e}")
+        except:
+            try:
+                # Ruta al segundo ejecutable
+                tracking_serial_exe = "HoloStream_tracking_interface.py"
+                
+                # Ejecutar el segundo ejecutable
+                subprocess.run([python_path, tracking_serial_exe], check=True)
+            except:
+                print(f"Error executing the tracking interface")
     def run_other_program_DSHPC(self):
         # Ejecutar el segundo script
+        python_path = sys.executable  
         try:
             # Ruta al segundo ejecutable
             tracking_serial_exe = "HoloStream_compensation_interface.exe"
             
             # Ejecutar el segundo ejecutable
             subprocess.run([tracking_serial_exe], check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error al ejecutar {tracking_serial_exe}: {e}")
+        except:
+            try:
+                print("tracking")
+                # Ruta al segundo ejecutable
+                tracking_serial_exe = "HoloStream_compensation_interface.py"
+                env = os.environ.copy()
+                # Ejecutar el segundo ejecutable
+                subprocess.run([python_path, tracking_serial_exe], check=True)
+                
+            except:
+                print(f"Error executing the compensation interface")
 
 
 # Creación de la ventana y de la aplicación
 root = tk.Tk()  # Utilizamos una ventana normal de Tkinter
 app = CameraApp(root)
 def on_closing():
-    if messagebox.askokcancel("Exit", "Do you want to exit HoloStream?"):
+    if messagebox.askokcancel("Exit", "Do you want to exit the tracking interface?"):
         root.destroy()
         sys.exit()  # Exit the program
 root.protocol("WM_DELETE_WINDOW", on_closing)

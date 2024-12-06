@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from tkinter import filedialog
 import subprocess
 import sys
-
+import os
 def tiro(holo,fx_0,fy_0,fx_tmp, fy_tmp,lamb,M,N,dx,dy,k,m,n):
     
     #Calculo de los angulos de inclinación
@@ -53,9 +53,16 @@ class CameraApp:
         ventana.resizable(True, True)
         ventana.title("HoloStream")
 
-        #Llamamos opencv para leer la cámara y leemos el tamaño de la imagen 
+        #Llamamos opencv para leer la cámara y leemos el tamaño de la imagen
+
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
+
+        # Verificar si la cámara fue detectada correctamente
+        if not ret:
+            messagebox.showerror("Error", "No camera were deteced. The app will close, to compensate a pre-recorded hologram open holoStream_compensation_interface.exe or to track a object open holoStream_tracking_interface.exe")
+            ventana.destroy()  # Cierra la aplicación
+            return
         ancho = cv2.CAP_PROP_FRAME_WIDTH
         largo = cv2.CAP_PROP_FRAME_HEIGHT
 
@@ -64,9 +71,12 @@ class CameraApp:
         self.cap.release()
 
         self.cap = cv2.VideoCapture(0)
+        print("a")
         #Obligo la resolución
         self.cap.set(ancho, frame.shape[1]*2)  # Ancho deseado
         self.cap.set(largo,  frame.shape[0]*2)  # Alto deseado
+        print(frame.shape[1])
+        print(frame.shape[0])
         # Establecer el tema "cosmo" al inicio (el estilo blanquito)
         ventana.style = ttkb.Style(theme="cosmo")
 
@@ -119,19 +129,23 @@ class CameraApp:
         # Insertar el valor inicial de longitud de onda
         self.entry_param3.insert(0, "0.633")
 
-        self.mask_len = tk.Entry(ventana,width = 11)
-        self.mask_len.grid(row=8, column=3, padx=(0, 0), pady=10, sticky="e")
+        #self.mask_len = tk.Entry(ventana,width = 11)
+        #self.mask_len.grid(row=8, column=3, padx=(0, 0), pady=10, sticky="e")
 
         # Colocar el placeholder 
-        self.mask_len.insert(0, "Mask radius")
+        #self.mask_len.insert(0, "Mask radius")
 
         # Vincular los eventos para quitar y agregar el placeholder
-        self.mask_len.bind("<FocusIn>", self.clear_placeholder)
-        self.mask_len.bind("<FocusOut>", self.add_placeholder)
+        #self.mask_len.bind("<FocusIn>", self.clear_placeholder)
+        #self.mask_len.bind("<FocusOut>", self.add_placeholder)
         # Boton de aplicar la configuración
         self.boton_aplicar = ttk.Button(ventana, text="Apply", command=self.aplicar_transformaciones)
-        self.boton_aplicar.grid(row=9, column= 3, padx=10, pady=10, sticky='e')
+        self.boton_aplicar.grid(row=8, column= 3, padx=10, pady=10, sticky='e')
 
+        self.boton_stop = ttk.Button(ventana, text="Stop", command=self.stop_recording)
+        self.boton_stop.grid(row=9, column= 3, padx=10, pady=10, sticky='e')
+        self.boton_stop.config(state="disabled")  # Deshabilita el botón si no hay texto
+        
         #Sección de grabar
         ttk.Label(ventana, text="Record", font=("Helvetica", 16, "bold")).grid(row=7, column=5, padx=(0, 0), pady=10,columnspan=2)
         
@@ -147,7 +161,7 @@ class CameraApp:
 
         #Ajusto las imagenes al tamaño de la pantalla meramente para visualización
         self.ancho = round(screen_width/3.05)
-        self.largo = round(screen_height/2)
+        self.largo = round(screen_height/3)
         # Imágenes iniciales de fondo negro 
         self.black_image1 = Image.new("RGB", (self.ancho, self.largo), "black")
         self.black_image2 = Image.new("RGB", (self.ancho, self.largo), "black")
@@ -193,7 +207,6 @@ class CameraApp:
         ttk.Label(ventana, text="Want to compensate a hologram", font=("Helvetica", 16, "bold")).grid(row=11, column=5, padx=(0, 0), pady=10,columnspan=2)
         self.btn_tracking = ttk.Button(ventana, text="Open compensation interface", command=self.run_other_program_DSHPC)
         self.btn_tracking.grid(row=12, column=5,columnspan=2)
-        # Llamar al método para capturar y mostrar fotogramas
         
         self.ini2=0
         self.grabacion = 0
@@ -213,7 +226,9 @@ class CameraApp:
         nuevo_tema = self.theme_selector.get()
         self.ventana.style.theme_use(nuevo_tema)
 
-
+    def stop_recording(self):
+        self.ini = 0
+        self.boton_stop.config(state="disabled")  # Deshabilita el botón si no hay texto
     
     def toggle_grabacion(self):
         if(self.grabacion==0):
@@ -306,21 +321,25 @@ class CameraApp:
 
         fourier1=np.fft.fftshift(np.fft.fft2(np.fft.fftshift(frame)))
         if(cuadrante==1):
+            self.mascara=primer_cuadrante
             fourier=primer_cuadrante*fourier1
         if(cuadrante==2):
+            self.mascara=segundo_cuadrante
             fourier=segundo_cuadrante*fourier1
         if(cuadrante==3):
+            self.mascara=tercer_cuadrante
             fourier=tercer_cuadrante*fourier1
         if(cuadrante==4):
+            self.mascara=cuarto_cuadrante
             fourier=cuarto_cuadrante*fourier1
         a=amplitud(fourier)
         #Calculamos la amplitud del espectro de fourier
 
         #Encontramos la posición en x y y del máximo en el espacio de Fourier
         pos_max = np.unravel_index(np.argmax(a, axis=None), a.shape)
-        self.mascara = crear_mascara_circular(frame.shape,(pos_max[1],pos_max[0]),50)
+        #self.mascara = crear_mascara_circular(frame.shape,(pos_max[1],pos_max[0]),50)
         #Transformada insversa de fourier
-        fourier= fourier1*self.mascara
+        #fourier= fourier1*self.mascara
         fourier=np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(fourier)))
 
 
@@ -506,12 +525,13 @@ class CameraApp:
     
     #Esta función permite reconocer los parámetros para la reconstrucción
     def aplicar_transformaciones(self):
+        self.boton_stop.config(state="normal")
         # Obtener los parámetros ingresados por el usuario
         self.dx = float(self.entry_param1.get())
         self.dy = float(self.entry_param2.get())
         self.lamb = float(self.entry_param3.get())
         self.cuadrante = float(self.entry_param4.get())
-        self.mask_len_data = int(self.mask_len.get())
+        #self.mask_len_data = int(self.mask_len.get())
         self.ini=1
         # Aquí puedes realizar alguna acción con los parámetros, como aplicar alguna transformación adicional
     def abrir_nueva_ventana(self):
@@ -561,7 +581,9 @@ class CameraApp:
         self.ani = None
 
     #Seccion para el tracking
+    #Seccion para el tracking
     def run_other_program(self):
+        python_path = sys.executable  
         # Ejecutar el segundo script
         try:
             # Ruta al segundo ejecutable
@@ -569,19 +591,35 @@ class CameraApp:
             
             # Ejecutar el segundo ejecutable
             subprocess.run([tracking_serial_exe], check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error opening {tracking_serial_exe}: {e}")
-    #Seccion para el tracking
+        except:
+            try:
+                # Ruta al segundo ejecutable
+                tracking_serial_exe = "HoloStream_tracking_interface.py"
+                
+                # Ejecutar el segundo ejecutable
+                subprocess.run([python_path, tracking_serial_exe], check=True)
+            except:
+                print(f"Error executing the tracking interface")
     def run_other_program_DSHPC(self):
         # Ejecutar el segundo script
+        python_path = sys.executable  
         try:
             # Ruta al segundo ejecutable
             tracking_serial_exe = "HoloStream_compensation_interface.exe"
             
             # Ejecutar el segundo ejecutable
             subprocess.run([tracking_serial_exe], check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error opening {tracking_serial_exe}: {e}")
+        except:
+            try:
+                print("tracking")
+                # Ruta al segundo ejecutable
+                tracking_serial_exe = "HoloStream_compensation_interface.py"
+                env = os.environ.copy()
+                # Ejecutar el segundo ejecutable
+                subprocess.run([python_path, tracking_serial_exe], check=True)
+                
+            except:
+                print(f"Error executing the compensation interface")
 
 
     def select_file(self):
@@ -592,27 +630,6 @@ class CameraApp:
             # Mostrar la ruta del archivo seleccionado en el Entry
             self.file_entry.delete(0, tk.END)
             self.file_entry.insert(0, file_path)
-
-    def open_new_window(self):
-        # Crear la ventana secundaria
-        new_window = tk.Toplevel(self.ventana)
-        new_window.title("Segunda Ventana")
-
-        # Crear un botón en la nueva ventana para seleccionar un archivo
-        file_button = tk.Button(new_window, text="Seleccionar Archivo", command=self.select_file)
-        file_button.pack(side=tk.LEFT, padx=10, pady=10)
-
-        # Crear un Entry para mostrar la ruta del archivo seleccionado
-        self.file_entry = tk.Entry(new_window, width=50)
-        self.file_entry.pack(side=tk.LEFT, padx=10, pady=10)
-
-        # Agregar otros widgets aquí según sea necesario
-        label = tk.Label(new_window, text="Aquí puedes agregar más widgets.")
-        label.pack(pady=5)
-
-        # Combobox como parte de la segunda ventana
-        self.z = ttk.Combobox(new_window, values=[1, 2, 3, 4], state="readonly", width=5)
-        self.z.pack(pady=10)
 
 # Creación de la ventana y de la aplicación
 root = tk.Tk()  # Utilizamos una ventana normal de Tkinter

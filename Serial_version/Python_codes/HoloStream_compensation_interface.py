@@ -59,11 +59,11 @@ class SecondWindowApp:
         self.ventana.title("Compensate hologram")
         
         # Input file
-        ttk.Label(ventana, text="Input File", font=("Helvetica", 16, "bold")).grid(row=0, column=0, columnspan=8, pady=(10, 5))
+        ttk.Label(ventana, text="Input File", font=("Helvetica", 16, "bold")).grid(row=0, column=0, columnspan=6, pady=(10, 5))
         self.file_entry = tk.Entry(ventana, width=50, state="readonly")
-        self.file_entry.grid(row=1, column=0, columnspan=7, padx=10, pady=5, sticky="ew")
+        self.file_entry.grid(row=1, column=0, columnspan=5, padx=10, pady=5, sticky="ew")
         file_button = tk.Button(ventana, text="Select File", command=self.select_file)
-        file_button.grid(row=1, column=7, padx=10, pady=5)
+        file_button.grid(row=1, column=5, padx=10, pady=5)
         
         ttk.Separator(ventana, orient=tk.HORIZONTAL).grid(row=2, column=0, columnspan=8, sticky='ew', pady=20)
 
@@ -86,18 +86,24 @@ class SecondWindowApp:
         self.entry_param4 = ttk.Combobox(ventana, values=[1, 2, 3, 4], state="readonly", width=1)
         self.entry_param4.grid(row=7, column=5, padx=(0, 0), pady=10)
 
-        ttk.Label(ventana, text="Mask radius", font=("Helvetica", 14)).grid(row=6, column=6, columnspan=2, padx=10, pady=5)
-        self.mask_len = tk.Entry(ventana, width=15)
-        self.mask_len.grid(row=7, column=6, columnspan=2, padx=10, pady=5)
+        #ttk.Label(ventana, text="Mask radius", font=("Helvetica", 14)).grid(row=6, column=6, columnspan=2, padx=10, pady=5)
+        #self.mask_len = tk.Entry(ventana, width=15)
+        #self.mask_len.grid(row=7, column=6, columnspan=2, padx=10, pady=5)
 
         ttk.Separator(ventana, orient=tk.HORIZONTAL).grid(row=11, column=0, columnspan=8, sticky='ew', pady=20)
 
-        ttk.Label(ventana, text="Output name file", font=("Helvetica", 16, "bold")).grid(row=12, column=0, columnspan=8, pady=(10, 5))
+        ttk.Label(ventana, text="Output name file", font=("Helvetica", 16, "bold")).grid(row=12, column=0, columnspan=6, pady=(10, 5))
         self.file_name_out = tk.Entry(ventana, width=50, state="normal")
-        self.file_name_out.grid(row=13, column=1, columnspan=6, padx=10, pady=5, sticky="ew")
+        self.file_name_out.grid(row=13, column=0, columnspan=6, padx=10, pady=5, sticky="ew")
 
         self.btn_abrir_ventana = ttk.Button(ventana, text="Start compensating", command=self.DSHPC)
-        self.btn_abrir_ventana.grid(row=14, column=1, columnspan=6, sticky='ew', pady=10)
+        self.btn_abrir_ventana.grid(row=14, column=1, columnspan=4, sticky='ew', pady=10)
+        
+        self.progress_bar = ttk.Progressbar(self.ventana, orient="horizontal", length=200, mode="determinate")
+        self.progress_bar.grid(row=7, column=1,columnspan=4, padx=10, pady=10)
+        # Etiqueta para el estado de la barra de progreso
+        self.progress_label = ttk.Label(ventana, text="Uploading...")
+        self.progress_label.grid(row=8, column=1,columnspan=4, padx=10, pady=10)
 
         self.load_values_from_file("parametros.txt")  # archivo de texto con parámetros
 
@@ -127,8 +133,8 @@ class SecondWindowApp:
                             self.wavelength_entry.insert(0, value)
                         elif key == "quadrant":
                             self.entry_param4.set(value)
-                        elif key == "mask_radius":
-                            self.mask_len.insert(0, value)
+                        #elif key == "mask_radius":
+                            #self.mask_len.insert(0, value)
                         elif key == "output_file":
                             self.file_name_out.insert(0, value)
         except Exception as e:
@@ -176,6 +182,11 @@ class SecondWindowApp:
             messagebox.showinfo("Información", "A name for the output file has not been specified.")
             return
 
+        # Muestra la barra de progreso y la etiqueta
+        self.progress.pack(pady=10)
+        self.progress_label.pack()
+        self.progress["value"] = 0
+        self.ventana.update_idletasks()
         k= 2*np.pi/lamb
         Fox= M/2
         Foy= N/2
@@ -188,35 +199,39 @@ class SecondWindowApp:
 
         #Definiendo cuadrantes, solo calidad
         primer_cuadrante= np.zeros((N,M))
-        primer_cuadrante[0:round(N/2 - (N*0.1)),round(M/2 + (M*0.1)):M]=1
+        primer_cuadrante[0:round(N/2 - (N*0.15)),round(M/2 + (M*0.15)):M]=1
         segundo_cuadrante= np.zeros((N,M))
-        segundo_cuadrante[0:round(N/2 -(N*0.1)),0:round(M/2 - (M*0.1))]=1
+        segundo_cuadrante[0:round(N/2 -(N*0.15)),0:round(M/2 - (M*0.15))]=1
         tercer_cuadrante= np.zeros((N,M))
-        tercer_cuadrante[round(N/2 +(N*0.1)):N,0:round(M/2 - (M*0.1))]=1
+        tercer_cuadrante[round(N/2 +(N*0.15)):N,0:round(M/2 - (M*0.15))]=1
         cuarto_cuadrante= np.zeros((N,M))
-        cuarto_cuadrante[round(N/2 +(N*0.1)):N,round(M/2 + (M*0.1)):M]=1
+        cuarto_cuadrante[round(N/2 +(N*0.15)):N,round(M/2 + (M*0.15)):M]=1
         
         #Ahora a tirar fourier
         tiempo_inicial = time.time()
         fourier=fft.fftshift(fft.fft2(fft.fftshift(U)))
         if(cuadrante=="1"):
+            mascara=primer_cuadrante
             fourier=primer_cuadrante*fourier
         if(cuadrante=="2"):
+            mascara=segundo_cuadrante
             fourier=segundo_cuadrante*fourier
         if(cuadrante=="3"):
+            mascara=tercer_cuadrante
             fourier=tercer_cuadrante*fourier
         if(cuadrante=="4"):
+            mascara=cuarto_cuadrante
             fourier=cuarto_cuadrante*fourier
         a=amplitud(fourier)
         #Calculamos la amplitud del espectro de fourier
 
         #Encontramos la posición en x y y del máximo en el espacio de Fourier
         pos_max = np.unravel_index(np.argmax(a, axis=None), a.shape)
-        mayor = max(M,N)
-        tamano = int(round(mayor*0.14))
-        mascara = crear_mascara_circular(U.shape,(pos_max[1],pos_max[0]),tamano)
+        #mayor = max(M,N)
+        #tamano = int(round(mayor*0.14))
+        #mascara = crear_mascara_circular(U.shape,(pos_max[1],pos_max[0]),tamano)
         #Transformada insversa de fourier
-        fourier= fourier*mascara
+        #fourier= fourier*mascara
         fourier=fft.fftshift(fft.ifft2(fft.fftshift(fourier)))
 
         paso=0.2
@@ -257,10 +272,14 @@ class SecondWindowApp:
         min_val = np.min(fase)
         max_val = np.max(fase)
         fase = 255*(fase - min_val) / (max_val - min_val)
+        self.progress["value"] += (1/len(frames) *100)
+        self.ventana.update_idletasks()  # Actualiza la GUI
         if  len(frames)==1:
             video_path = str(nombre) + ".bmp"
-            
-            cv2.imwrite(video_path, frame)
+            # Oculta la barra de progreso y el mensaje de "Cargando..."
+            self.progress.pack_forget()
+            self.progress_label.pack_forget()
+            cv2.imwrite(video_path, fase)
             messagebox.showinfo("Information", "The compensation task is done")
             return
         video = []
@@ -318,6 +337,8 @@ class SecondWindowApp:
             tiempo_final = time.time()
             tiempo= tiempo_final-tiempo_inicial
             tiempo_frame.append(tiempo)
+            self.progress["value"] += (1/len(frames) *100)
+            self.ventana.update_idletasks()  # Actualiza la GUI
         # Guardar el array en un archivo de texto
 
         #Guardar los tiempos de computo
@@ -327,10 +348,14 @@ class SecondWindowApp:
 
         # Define el formato del video y crea un objeto VideoWriter
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Puedes ajustar el códec según tus necesidades
+        # Oculta la barra de progreso y el mensaje de "Cargando..."
+        self.progress.pack_forget()
+        self.progress_label.pack_forget()
         video_path = str(nombre) + ".avi"
         imageio.mimsave(video_path, video, fps=15)
         
         messagebox.showinfo("Information", "The compensation task is done")
+
 
 # Crear la ventana principal de la aplicación
 root = tk.Tk()

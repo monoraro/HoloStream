@@ -87,11 +87,11 @@ class SecondWindowApp:
         self.ventana.title("Compensate hologram")
         
         # Input file
-        ttk.Label(ventana, text="Input File", font=("Helvetica", 16, "bold")).grid(row=0, column=0, columnspan=8, pady=(10, 5))
+        ttk.Label(ventana, text="Input File", font=("Helvetica", 16, "bold")).grid(row=0, column=0, columnspan=6, pady=(10, 5))
         self.file_entry = tk.Entry(ventana, width=50, state="readonly")
-        self.file_entry.grid(row=1, column=0, columnspan=7, padx=10, pady=5, sticky="ew")
+        self.file_entry.grid(row=1, column=0, columnspan=5, padx=10, pady=5, sticky="ew")
         file_button = tk.Button(ventana, text="Select File", command=self.select_file)
-        file_button.grid(row=1, column=7, padx=10, pady=5)
+        file_button.grid(row=1, column=5, padx=10, pady=5)
         
         ttk.Separator(ventana, orient=tk.HORIZONTAL).grid(row=2, column=0, columnspan=8, sticky='ew', pady=20)
 
@@ -114,18 +114,18 @@ class SecondWindowApp:
         self.entry_param4 = ttk.Combobox(ventana, values=[1, 2, 3, 4], state="readonly", width=1)
         self.entry_param4.grid(row=7, column=5, padx=(0, 0), pady=10)
 
-        ttk.Label(ventana, text="Mask radius", font=("Helvetica", 14)).grid(row=6, column=6, columnspan=2, padx=10, pady=5)
-        self.mask_len = tk.Entry(ventana, width=15)
-        self.mask_len.grid(row=7, column=6, columnspan=2, padx=10, pady=5)
+        #ttk.Label(ventana, text="Mask radius", font=("Helvetica", 14)).grid(row=6, column=6, columnspan=2, padx=10, pady=5)
+        #self.mask_len = tk.Entry(ventana, width=15)
+        #self.mask_len.grid(row=7, column=6, columnspan=2, padx=10, pady=5)
 
         ttk.Separator(ventana, orient=tk.HORIZONTAL).grid(row=11, column=0, columnspan=8, sticky='ew', pady=20)
 
-        ttk.Label(ventana, text="Output name file", font=("Helvetica", 16, "bold")).grid(row=12, column=0, columnspan=8, pady=(10, 5))
+        ttk.Label(ventana, text="Output name file", font=("Helvetica", 16, "bold")).grid(row=12, column=0, columnspan=6, pady=(10, 5))
         self.file_name_out = tk.Entry(ventana, width=50, state="normal")
-        self.file_name_out.grid(row=13, column=1, columnspan=6, padx=10, pady=5, sticky="ew")
+        self.file_name_out.grid(row=13, column=0, columnspan=6, padx=10, pady=5, sticky="ew")
 
         self.btn_abrir_ventana = ttk.Button(ventana, text="Start compensating", command=self.DSHPC)
-        self.btn_abrir_ventana.grid(row=14, column=1, columnspan=6, sticky='ew', pady=10)
+        self.btn_abrir_ventana.grid(row=14, column=1, columnspan=4, sticky='ew', pady=10)
         self.llamado_funciones_cuda()
         # Llamar la función que carga los valores
         self.load_values_from_file("parametros.txt")  # archivo de texto con parámetros
@@ -149,8 +149,8 @@ class SecondWindowApp:
                             self.wavelength_entry.insert(0, value)
                         elif key == "quadrant":
                             self.entry_param4.set(value)
-                        elif key == "mask_radius":
-                            self.mask_len.insert(0, value)
+                        #elif key == "mask_radius":
+                            #self.mask_len.insert(0, value)
                         elif key == "output_file":
                             self.file_name_out.insert(0, value)
         except Exception as e:
@@ -215,11 +215,11 @@ class SecondWindowApp:
             messagebox.showinfo("Information", "A quadrant has not been specified")
             return
 
-        try:
-            mask_len = int(self.mask_len.get())
-        except:
-            messagebox.showinfo("Information", "mask size must be a integral number")
-            return
+        #try:
+            #mask_len = int(self.mask_len.get())
+        #except:
+            #messagebox.showinfo("Information", "mask size must be a integral number")
+            #return
         nombre = self.file_name_out.get()
         if nombre == "":
             messagebox.showinfo("Information", "A name for the output file has not been specified")
@@ -320,14 +320,14 @@ class SecondWindowApp:
         finale = mai.reshape((N, M))
         
 
-        #Creacion de la mascara circular
-        pos_max = np.unravel_index(np.argmax(finale, axis=None), U.shape)
-        mascara = crear_mascara_circular(U.shape,(pos_max[1],pos_max[0]),mask_len)
-        mascara = asarray(mascara.astype(np.float32))
-        self.cuadrante_gpu = gpuarray.to_gpu(mascara)
+        #Creation of a circle mask
+        #pos_max = np.unravel_index(np.argmax(finale, axis=None), U.shape)
+        #mascara = crear_mascara_circular(U.shape,(pos_max[1],pos_max[0]),mask_len)
+        #mascara = asarray(mascara.astype(np.float32))
+        #self.cuadrante_gpu = gpuarray.to_gpu(mascara)
         
-        grid_dim = (N // (block_dim[0]), M // (block_dim[1]), 1)
-        self.mascara_1er_cuadrante(self.holo,self.holo2,self.cuadrante_gpu, np.int32(N),np.int32(M), block=block_dim, grid=grid_dim)
+        #grid_dim = (N // (block_dim[0]), M // (block_dim[1]), 1)
+        #self.mascara_1er_cuadrante(self.holo,self.holo2,self.cuadrante_gpu, np.int32(N),np.int32(M), block=block_dim, grid=grid_dim)
 
         self.Amplitud(self.U_gpu,self.holo,np.int32(N),np.int32(M),block=block_dim, grid=grid_dim)
         mai = self.U_gpu.get()
@@ -356,7 +356,7 @@ class SecondWindowApp:
         # Calcular las coordenadas (fila, columna) desde la posición
         col_index, row_index = divmod(max_position_cpu, U.shape[1])
 
-        paso=0.2
+        paso=0.05
         fin=0
         fy=col_index
         fx=row_index
@@ -560,7 +560,8 @@ class SecondWindowApp:
         # Define el formato del video y crea un objeto VideoWriter
         video_path = str(nombre) + ".avi"
         imageio.mimsave(video_path, video, fps=15)
-        
+        np.savetxt("Globulos/array.txt", tiempo_frame, fmt="%.8f")  # fmt="%d" es para formato de enteros
+
         messagebox.showinfo("Information", "The compensation task is done")
 
 # Crear la ventana principal de la aplicación

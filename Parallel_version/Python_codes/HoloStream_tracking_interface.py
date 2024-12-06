@@ -134,10 +134,10 @@ class SecondWindowApp:
         tk.Label(ventana, text="Select type of tracking:", font=("Helvetica", 16, "bold")).grid(row=3, column=0, padx=10, pady=5, sticky="w")
         
         radio_button1 = tk.Radiobutton(ventana, text="2D tracking", variable=self.opcion, value=1, font=("Helvetica", 16), command=self.Change_principal_funtion)
-        radio_button1.grid(row=3, column=3, padx=10, pady=5, sticky="w",columnspan=2)
+        radio_button1.grid(row=3, column=2, padx=10, pady=5, sticky="w",columnspan=2)
         
         radio_button2 = tk.Radiobutton(ventana, text="3D Tracking", variable=self.opcion, value=2, font=("Helvetica", 16), command=self.Change_principal_funtion)
-        radio_button2.grid(row=3, column=5, padx=10, pady=5, sticky="w",columnspan=2)
+        radio_button2.grid(row=3, column=4, padx=10, pady=5, sticky="w",columnspan=2)
 
         # Línea de separación
         ttk.Separator(ventana, orient=tk.HORIZONTAL).grid(row=4, column=0, columnspan=7, sticky='ew', pady=10)
@@ -179,27 +179,27 @@ class SecondWindowApp:
         self.delta_y_entry.grid(row=9, column=1, columnspan=2, padx=10, pady=5)
         self.delta_y_entry.config(state="disabled")
 
-        tk.Label(ventana, text="Wavelength (um)", font=("Helvetica", 14)).grid(row=8, column=3, padx=10, pady=5)
+        tk.Label(ventana, text="Wavelength (um)", font=("Helvetica", 14)).grid(row=8, column=3,columnspan=2, padx=10, pady=5)
         self.wavelength_entry = tk.Entry(ventana, width=15)
-        self.wavelength_entry.grid(row=9, column=3, padx=10, pady=5)
+        self.wavelength_entry.grid(row=9, column=3,columnspan=2, padx=10, pady=5)
         self.wavelength_entry.config(state="disabled")
 
-        tk.Label(ventana, text="Quadrant", font=("Helvetica", 14)).grid(row=8, column=4, padx=10, pady=5)
+        tk.Label(ventana, text="Quadrant", font=("Helvetica", 14)).grid(row=8, column=5,columnspan=2, padx=10, pady=5)
         self.entry_param4 = ttk.Combobox(ventana, values=[1, 2, 3, 4], state="readonly", width=1)
-        self.entry_param4.grid(row=9, column=4, padx=(0, 0), pady=10)
+        self.entry_param4.grid(row=9, column=5,columnspan=2, padx=(0, 0), pady=10)
         self.entry_param4.config(state="disabled")
 
-        ttk.Label(ventana, text="Threshold (0 - 100)", font=("Helvetica", 14)).grid(row=8, column=5, padx=10, pady=5)
-        self.thresh = tk.Entry(ventana, width=10)
-        self.thresh.grid(row=9, column=5, padx=10, pady=5)
-        self.thresh.config(state="disabled")
+        #ttk.Label(ventana, text="Threshold (0 - 100)", font=("Helvetica", 14)).grid(row=8, column=5, padx=10, pady=5)
+        #self.thresh = tk.Entry(ventana, width=10)
+        #self.thresh.grid(row=9, column=5, padx=10, pady=5)
+        #self.thresh.config(state="disabled")
         
         ttk.Separator(ventana, orient=tk.HORIZONTAL).grid(row=16, column=0, columnspan=7, sticky='ew', pady=10)
 
-        ttk.Label(ventana, text="Mask radius", font=("Helvetica", 14)).grid(row=8, column=6, padx=10, pady=5)
-        self.mask_len = tk.Entry(ventana, width=10)
-        self.mask_len.grid(row=9, column=6, padx=10, pady=5)
-        self.mask_len.config(state="disabled")
+        #ttk.Label(ventana, text="Mask radius", font=("Helvetica", 14)).grid(row=8, column=6, padx=10, pady=5)
+        #self.mask_len = tk.Entry(ventana, width=10)
+        #self.mask_len.grid(row=9, column=6, padx=10, pady=5)
+        #self.mask_len.config(state="disabled")
 
         ttk.Separator(ventana, orient=tk.HORIZONTAL).grid(row=12, column=0, columnspan=7, sticky='ew', pady=10)
 
@@ -216,11 +216,11 @@ class SecondWindowApp:
         # Nombre de archivo de salida
         ttk.Label(ventana, text="Output File name", font=("Helvetica", 16, "bold")).grid(row=17, column=0, columnspan=7, pady=(10, 5))
         self.file_name_out = tk.Entry(ventana, width=50, state="normal")
-        self.file_name_out.grid(row=18, column=1, columnspan=5, padx=10, pady=5, sticky="ew")
+        self.file_name_out.grid(row=18, column=0, columnspan=7, padx=10, pady=5, sticky="ew")
 
         # Botón para iniciar tracking
         self.btn_abrir_ventana = ttk.Button(ventana, text="Start tracking")
-        self.btn_abrir_ventana.grid(row=19, column=1, columnspan=5, sticky='ew', pady=10)
+        self.btn_abrir_ventana.grid(row=19, column=1, columnspan=3, sticky='ew', pady=10)
         self.btn_abrir_ventana.config(state="disabled")
 
         self.region_selector = RegionSelector(self.ventana)
@@ -238,9 +238,9 @@ class SecondWindowApp:
             self.delta_y_entry.config(state="normal")
             self.wavelength_entry.config(state="normal")
             self.entry_param4.config(state="normal")
-            self.thresh.config(state="normal")
+            #self.thresh.config(state="normal")
             self.btn_abrir_ventana.config(state="normal")
-            self.mask_len.config(state="normal")
+            #self.mask_len.config(state="normal")
 
         elif self.opcion.get() == 1:
             self.btn_abrir_ventana.config(command=self.funcion_tracking_2D)
@@ -251,8 +251,8 @@ class SecondWindowApp:
             self.delta_y_entry.config(state="disabled")
             self.wavelength_entry.config(state="disabled")
             self.entry_param4.config(state="disabled")
-            self.thresh.config(state="disabled")
-            self.mask_len.config(state="disabled")
+            #self.thresh.config(state="disabled")
+            #self.mask_len.config(state="disabled")
             self.btn_abrir_ventana.config(state="normal")
 
     def load_values_from_file(self, filepath):
@@ -281,14 +281,14 @@ class SecondWindowApp:
                             self.entry_param4.config(state="normal")
                             self.entry_param4.set(value)
                             self.entry_param4.config(state="disabled")
-                        elif key == "mask_radius":
-                            self.mask_len.config(state="normal")
-                            self.mask_len.insert(0, value)
-                            self.mask_len.config(state="disabled")
-                        elif key == "threshold":
-                            self.thresh.config(state="normal")
-                            self.thresh.insert(0, value)
-                            self.thresh.config(state="disabled")
+                        #elif key == "mask_radius":
+                        #    self.mask_len.config(state="normal")
+                        #    self.mask_len.insert(0, value)
+                        #    self.mask_len.config(state="disabled")
+                        #elif key == "threshold":
+                        #    self.thresh.config(state="normal")
+                        #    self.thresh.insert(0, value)
+                        #    self.thresh.config(state="disabled")
                         elif key == "min_range":
                             self.min_range_entry.config(state="normal")
                             self.min_range_entry.insert(0, value)
@@ -506,24 +506,24 @@ class SecondWindowApp:
         if nombre == "":
             messagebox.showinfo("Información", "No se ha indicado un nombre para el archivo de salida")
             return
-        thresh = self.thresh.get()
-        if thresh == "":
-            messagebox.showinfo("Information", "A threshold has not been specified.")
-            return
-        try:
-            thresh = int(thresh)
-        except:
-            messagebox.showinfo("Information", "The threshold must be a number from 0 to 100.")
-            return
-        if (thresh < 0 or 100 < thresh):
-            messagebox.showinfo("Information", "The threshold must be a number from 0 to 100.")
-            return
-        thresh = int(round(thresh/100 * 255))
-        try:
-            mask_len = int(self.mask_len.get())
-        except:
-            messagebox.showinfo("Information", "Mask size must be a integral number")
-            return
+        #thresh = self.thresh.get()
+        #if thresh == "":
+        #    messagebox.showinfo("Information", "A threshold has not been specified.")
+        #    return
+        #try:
+        #    thresh = int(thresh)
+        #except:
+        #    messagebox.showinfo("Information", "The threshold must be a number from 0 to 100.")
+        #    return
+        #if (thresh < 0 or 100 < thresh):
+        #    messagebox.showinfo("Information", "The threshold must be a number from 0 to 100.")
+        #    return
+        #thresh = int(round(thresh/100 * 255))
+        #try:
+            #mask_len = int(self.mask_len.get())
+        #except:
+        #    messagebox.showinfo("Information", "Mask size must be a integral number")
+        #    return
         k= 2*np.pi/lamb
         Fox= M/2
         Foy= N/2
@@ -623,13 +623,13 @@ class SecondWindowApp:
         
 
         #Creacion de la mascara circular
-        pos_max = np.unravel_index(np.argmax(finale, axis=None), U.shape)
-        mascara = crear_mascara_circular(U.shape,(pos_max[1],pos_max[0]),mask_len)
-        mascara = asarray(mascara.astype(np.float32))
-        self.cuadrante_gpu = gpuarray.to_gpu(mascara)
+        #pos_max = np.unravel_index(np.argmax(finale, axis=None), U.shape)
+        #mascara = crear_mascara_circular(U.shape,(pos_max[1],pos_max[0]),mask_len)
+        #mascara = asarray(mascara.astype(np.float32))
+        #self.cuadrante_gpu = gpuarray.to_gpu(mascara)
         
-        grid_dim = (N // (block_dim[0]), M // (block_dim[1]), 1)
-        self.mascara_1er_cuadrante(self.holo,self.holo2,self.cuadrante_gpu, np.int32(N),np.int32(M), block=block_dim, grid=grid_dim)
+        #grid_dim = (N // (block_dim[0]), M // (block_dim[1]), 1)
+        #self.mascara_1er_cuadrante(self.holo,self.holo2,self.cuadrante_gpu, np.int32(N),np.int32(M), block=block_dim, grid=grid_dim)
 
         self.Amplitud(self.U_gpu,self.holo,np.int32(N),np.int32(M),block=block_dim, grid=grid_dim)
 
@@ -923,13 +923,7 @@ class SecondWindowApp:
         ret, frame = video.read()
         if not ret:
             exit()
-
-        # Convertir a escala de grises
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-        # Aplicar umbralización para detectar los cuadros
-        _, thresholded = cv2.threshold(gray, thresh, 255, cv2.THRESH_BINARY)
-
+            
         # Usar las coordenadas del área mínima seleccionada
         min_area_coords = self.region_selector.min_area_coords
         x0, y0, x1, y1 = min_area_coords
