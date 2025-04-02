@@ -327,7 +327,7 @@ class CameraApp:
         k = 2*mt.pi/self.lamb
         Fox = M/2
         Foy = N/2
-        threso = 0.2
+        threso = 0.4
         #Esta variable sirve para inicializar el valor mínimo de la suma
         suma_max = np.array([[0]]) 
         #Definicion de tipos de variables compatibles con cuda
@@ -448,7 +448,7 @@ class CameraApp:
         # Calcular las coordenadas (fila, columna) desde la posición
         col_index, row_index = divmod(max_position_cpu, U.shape[1])
 
-        paso=0.2
+        paso=0.3
         fin=0
         fy=col_index
         fx=row_index
@@ -534,7 +534,7 @@ class CameraApp:
     def transformacion_2(self, frame):
         frame=ajuste_tamano1(frame)
         G = 1
-        paso=0.2
+        paso=0.0002
         k = 2*mt.pi/self.lamb
         #Leemos y enviamos la imagen a la gpu
         U = asarray(frame)
